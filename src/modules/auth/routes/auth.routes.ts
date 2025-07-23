@@ -5,6 +5,7 @@ import { prisma } from '../../..'
 import { registerDto } from '../dto/register.dto'
 import { PrismaClientKnownRequestError } from '../../../generated/prisma/runtime/library'
 import { loginDto } from '../dto/login.dto'
+import { JWTAuth } from '../../../lib/jwt'
 
 const router = express.Router()
 
@@ -88,11 +89,13 @@ router.post('/login', checkSchema(loginDto), async (req: Request, res: Response)
                 const isMatch = await bcrypt.compare(req.body.password, user.password)
 
                 if (isMatch) {
+                    const jwt = new JWTAuth({ email: user.email })
+                    const accessToken = jwt.generateToken()
                     return res.status(200).json({
                         status: 0,
                         message: 'Login sukses',
                         data: {
-                            token: null,
+                            token: accessToken,
                         }
                     })
                 } else {
