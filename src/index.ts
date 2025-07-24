@@ -3,6 +3,7 @@ import { errorHandler } from "./lib/utils"
 import config from "./config/config"
 import { PrismaClient } from './generated/prisma'
 import { authRoutes } from './modules/auth/routes/auth.routes'
+import { profileRoutes } from './modules/profile/routes/profile.routes'
 
 export const prisma = new PrismaClient()
 const app = express()
@@ -10,6 +11,7 @@ const app = express()
 app.use(express.json())
 
 app.use(authRoutes)
+app.use(profileRoutes)
 
 app.use((req: Request, res: Response, next: Function) => {
     next(errorHandler(req, res))
