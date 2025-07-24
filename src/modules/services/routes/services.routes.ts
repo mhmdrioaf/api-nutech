@@ -11,12 +11,15 @@ router.get('/services', authMiddleware, async (_req: Request, res: Response) => 
         }
     })
 
-    services.forEach(service => service.service_tarif.toNumber())
+    const results = services.map(service => ({
+        ...service,
+        service_tarif: service.service_tarif.toNumber()
+    }))
 
     return res.status(200).json({
         status: 0,
         message: 'Sukses',
-        data: services,
+        data: results,
     })
 })
 
