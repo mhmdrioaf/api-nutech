@@ -154,4 +154,24 @@ export class Transaction {
             }
         }
     }
+
+    async history(userEmail: string, offset: number = 0, limit: number | null) {
+        const userTransactions = await this.prismaService.transaction_history.findMany({
+            where: {
+                wallet: {
+                    owner: {
+                        email: userEmail,
+                    }
+                }
+            },
+            skip: offset,
+            take: limit ?? undefined,
+            omit: {
+                id: true,
+                wallet_id: true,
+            }
+        })
+
+        return userTransactions
+    }
 }
