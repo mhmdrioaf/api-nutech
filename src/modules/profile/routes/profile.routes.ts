@@ -118,7 +118,7 @@ router.put('/profile/image', authMiddleware, upload.single('file'), async (req: 
 
             return res.status(200).json({
                 status: 0,
-                message: 'Sukses',
+                message: 'Update Profile Image berhasil',
                 data: user,
             })
         }
