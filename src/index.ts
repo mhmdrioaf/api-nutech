@@ -4,14 +4,14 @@ import config from "./config/config"
 import { PrismaClient } from './generated/prisma'
 import { authRoutes } from './modules/auth/routes/auth.routes'
 import { profileRoutes } from './modules/profile/routes/profile.routes'
+import { bannersRoutes } from './modules/banners/routes/banners.routes'
 
 export const prisma = new PrismaClient()
 const app = express()
 
 app.use(express.json())
 
-app.use(authRoutes)
-app.use(profileRoutes)
+app.use(authRoutes, profileRoutes, bannersRoutes)
 
 app.use((req: Request, res: Response, next: Function) => {
     next(errorHandler(req, res))
