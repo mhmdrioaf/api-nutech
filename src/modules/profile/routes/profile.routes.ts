@@ -4,6 +4,7 @@ import { prisma } from '../../..'
 import { profileUpdateDto } from '../dto/profile-update.dto'
 import upload from '../middlewares/upload.middleware'
 import cloudinary from '../../../lib/cloudinary'
+import { MulterError } from 'multer'
 
 const router = express.Router()
 
@@ -86,11 +87,21 @@ router.put('/profile/update', authMiddleware, async (req: Request, res: Response
 
 router.put('/profile/image', authMiddleware, upload.single('file'), async (req: Request, res: Response) => {
     try {
+        const allowedFiles = ['image/jpeg', 'image/png']
+
         if (!req.file) {
             return res.status(400).json({
                 status: 102,
                 message: 'Field file tidak boleh kosong',
                 data: null,
+            })
+        }
+
+        if (!allowedFiles.includes(req.file.mimetype)) {
+            return res.status(400).json({
+                status: 102,
+                message: 'Format Image tidak sesuai',
+                data: null
             })
         }
 
@@ -122,7 +133,7 @@ router.put('/profile/image', authMiddleware, upload.single('file'), async (req: 
                 data: user,
             })
         }
-    } catch (err) {
+    } catch (err: any) {
         console.error('[PROFILE_UPDATE] terjadi kesalahan ketika mengupload foto: ', err)
         return res.status(500).json({
             status: 500,
