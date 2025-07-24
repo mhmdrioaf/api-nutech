@@ -30,3 +30,11 @@ model banners {
   banner_image String
   description String
 }
+
+model services {
+  id Int @default(autoincrement()) @id
+  service_code String
+  service_name String
+  service_icon String
+  service_tarif Decimal
+}
