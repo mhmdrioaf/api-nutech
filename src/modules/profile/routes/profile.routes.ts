@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express'
 import authMiddleware from '../../auth/middlewares/auth.middleware'
 import { prisma } from '../../..'
 import { profileUpdateDto } from '../dto/profile-update.dto'
+import upload from '../middlewares/upload.middleware'
+import cloudinary from '../../../lib/cloudinary'
 
 const router = express.Router()
 
@@ -77,6 +79,54 @@ router.put('/profile/update', authMiddleware, async (req: Request, res: Response
         return res.status(401).json({
             status: 108,
             message: 'Token tidak valid atau kedaluwarsa',
+            data: null,
+        })
+    }
+})
+
+router.put('/profile/image', authMiddleware, upload.single('file'), async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                status: 102,
+                message: 'Field file tidak boleh kosong',
+                data: null,
+            })
+        }
+
+        const reqUser = req.user!
+
+        const base64File = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+
+        const uploadResult = await cloudinary.uploader.upload(base64File, {
+            folder: 'nutech',
+        })
+
+        if (uploadResult.secure_url) {
+            const user = await prisma.users.update({
+                where: {
+                    email: reqUser.email,
+                },
+                data: {
+                    profile_image: uploadResult.secure_url,
+                },
+                omit: {
+                    id: true,
+                    password: true,
+                }
+            })
+
+            return res.status(200).json({
+                status: 0,
+                message: 'Sukses',
+                data: user,
+            })
+        }
+    } catch (err) {
+        console.error('[PROFILE_UPDATE] terjadi kesalahan ketika mengupload foto: ', err)
+        return res.status(500).json({
+            status: 500,
+            message: 'Internal server error',
             data: null,
         })
     }
