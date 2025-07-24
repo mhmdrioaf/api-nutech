@@ -6,13 +6,20 @@ import { authRoutes } from './modules/auth/routes/auth.routes'
 import { profileRoutes } from './modules/profile/routes/profile.routes'
 import { bannersRoutes } from './modules/banners/routes/banners.routes'
 import { servicesRoutes } from './modules/services/routes/services.routes'
+import { walletRoutes } from './modules/transactions/routes/wallet.routes'
 
 export const prisma = new PrismaClient()
 const app = express()
 
 app.use(express.json())
 
-app.use(authRoutes, profileRoutes, bannersRoutes, servicesRoutes)
+app.use(
+    authRoutes,
+    profileRoutes,
+    bannersRoutes,
+    servicesRoutes,
+    walletRoutes
+)
 
 app.use((req: Request, res: Response, next: Function) => {
     next(errorHandler(req, res))

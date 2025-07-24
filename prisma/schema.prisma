@@ -22,6 +22,8 @@ model users {
   first_name String
   last_name String
   profile_image String?
+
+  wallet users_wallet?
 }
 
 model banners {
@@ -37,4 +39,12 @@ model services {
   service_name String
   service_icon String
   service_tarif Decimal
+}
+
+model users_wallet {
+  id Int @default(autoincrement()) @id
+  balance Decimal
+
+  owner users @relation(fields: [owner_id], references: [id])
+  owner_id Int @unique
 }
