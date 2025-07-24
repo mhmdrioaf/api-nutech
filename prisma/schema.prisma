@@ -23,3 +23,10 @@ model users {
   last_name String
   profile_image String?
 }
+
+model banners {
+  id Int @default(autoincrement()) @id
+  banner_name String
+  banner_image String
+  description String
+}
