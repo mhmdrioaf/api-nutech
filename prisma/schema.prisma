@@ -47,4 +47,18 @@ model users_wallet {
 
   owner users @relation(fields: [owner_id], references: [id])
   owner_id Int @unique
+
+  transactions_history transaction_history[]
+}
+
+model transaction_history {
+  id Int @default(autoincrement()) @id
+  invoice_number String @unique
+  transaction_type String
+  description String
+  total_amount Decimal
+  created_on DateTime @default(now())
+
+  wallet_id Int
+  wallet users_wallet @relation(fields: [wallet_id], references: [id])
 }
