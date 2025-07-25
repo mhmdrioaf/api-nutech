@@ -7,13 +7,14 @@ interface IConfig {
     APP_PORT: number
     NODE_ENV: string
 
-    JWT_SECRET: string
+    JWT_SECRET?: string
     JWT_EXP_TIME: number
 
-    CLOUDINARY_API_KEY: string
-    CLOUDINARY_API_SECRET: string
-    CLOUDINARY_CLOUD_NAME: string
+    CLOUDINARY_API_KEY?: string
+    CLOUDINARY_API_SECRET?: string
+    CLOUDINARY_CLOUD_NAME?: string
 
+    DB_URL: string
     DB_HOST: string
     DB_PORT: number
     DB_USER: string
@@ -32,23 +33,24 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
 
+const DB_URL = process.env.DB_URL ?? ''
 const DB_HOST = process.env.DB_HOST ?? '127.0.0.1'
 const DB_PORT = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432
 const DB_USER = process.env.DB_USER ?? 'postgres'
 const DB_PASSWORD = process.env.DB_PASSWORD ?? ''
 const DB_DATABASE = process.env.DB_DATABASE ?? 'postgres'
 
-if (!JWT_SECRET) {
+if (!JWT_SECRET && NODE_ENV == 'development') {
     throw new Error('JWT_SECRET tidak ditemukan!')
 }
 
-if (!CLOUDINARY_API_KEY) {
+if (!CLOUDINARY_API_KEY && NODE_ENV == 'development') {
     throw new Error('CLOUDINARY_API_KEY tidak ditemukan!')
 }
-if (!CLOUDINARY_API_SECRET) {
+if (!CLOUDINARY_API_SECRET && NODE_ENV == 'development') {
     throw new Error('CLOUDINARY_API_SECRET tidak ditemukan!')
 }
-if (!CLOUDINARY_CLOUD_NAME) {
+if (!CLOUDINARY_CLOUD_NAME && NODE_ENV == 'development') {
     throw new Error('CLOUDINARY_CLOUD_NAME tidak ditemukan!')
 }
 
@@ -65,6 +67,7 @@ const config: IConfig = {
     CLOUDINARY_API_SECRET,
     CLOUDINARY_CLOUD_NAME,
 
+    DB_URL,
     DB_HOST,
     DB_PORT,
     DB_USER,
