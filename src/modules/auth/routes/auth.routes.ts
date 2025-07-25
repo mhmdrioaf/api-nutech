@@ -1,3 +1,164 @@
+/**
+ * @swagger
+ * /registration:
+ *  post:
+ *      tags:
+ *          - 1. Module Membership
+ *      summary: Pendaftaran Pengguna
+ *      requestBody:
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: user@gmail.com
+ *                          first_name:
+ *                              type: string
+ *                              example: Dummy
+ *                          last_name:
+ *                              type: string
+ *                              example: User
+ *                          password:
+ *                              type: string
+ *                              example: P#ssw0rd
+ *      responses:
+ *          200:
+ *              description: Pendaftaran berhasil
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Registrasi berhasil silakan login
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          400:
+ *              description: Format email tidak sesuai
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 102
+ *                              message:
+ *                                  type: string
+ *                                  example: Parameter email tidak sesuai format
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 500
+ *                              message:
+ *                                  type: string
+ *                                  example: Internal server error
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ * /login:
+ *  post:
+ *      tags:
+ *          - 1. Module Membership
+ *      summary: Pendaftaran Pengguna
+ *      requestBody:
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          email:
+ *                              type: string
+ *                              example: user@gmail.com
+ *                          password:
+ *                              type: string
+ *                              example: P#ssw0rd
+ *      responses:
+ *          200:
+ *              description: Login Berhasil
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Registrasi berhasil silakan login
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      token: 
+ *                                          type: string
+ *                                          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJpb2FuYW50YUBnbWFpbC5jb20iLCJpYXQiOjE3NTM0MTM0MTcsImV4cCI6MTc1MzQ1NjYxN30.H9akoe4tS9wITYmi2dQnVcaXjnk3QimwxqlwwjH2wbc
+ *          400:
+ *              description: Format email tidak sesuai
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 102
+ *                              message:
+ *                                  type: string
+ *                                  example: Parameter email tidak sesuai format
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          401:
+ *              description: Format email tidak sesuai
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 103
+ *                              message:
+ *                                  type: string
+ *                                  example: Username atau password salah
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 500
+ *                              message:
+ *                                  type: string
+ *                                  example: Internal server error
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ */
+
 import express, { Request, Response } from 'express'
 import { checkSchema, validationResult } from 'express-validator'
 import * as bcrypt from 'bcrypt'
@@ -127,7 +288,7 @@ router.post('/login', checkSchema(loginDto), async (req: Request, res: Response)
                         }
                     })
                 } else {
-                    return res.status(400).json({
+                    return res.status(401).json({
                         status: 103,
                         message: 'Username atau password salah',
                         data: null,
