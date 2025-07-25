@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express'
 import { errorHandler } from "./lib/utils"
 import config from "./config/config"
-import { PrismaClient } from './generated/prisma'
 import { authRoutes } from './modules/auth/routes/auth.routes'
 import { profileRoutes } from './modules/profile/routes/profile.routes'
 import { bannersRoutes } from './modules/banners/routes/banners.routes'
@@ -9,7 +8,6 @@ import { servicesRoutes } from './modules/services/routes/services.routes'
 import { walletRoutes } from './modules/transactions/routes/wallet.routes'
 import { transactionRoutes } from './modules/transactions/routes/transactions.routes'
 
-export const prisma = new PrismaClient()
 const app = express()
 
 app.use(express.json())
