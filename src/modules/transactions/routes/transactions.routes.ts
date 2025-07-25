@@ -1,3 +1,305 @@
+/**
+ * @swagger
+* /balance:
+ *  get:
+ *      security:
+ *          -   bearerAuth: []
+ *      tags:
+ *          - 3. Module Transaction
+ *      summary: Informasi saldo
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Get Balance berhasil
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      balance:
+ *                                          type: number
+ *                                          example: 150000
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 108
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ * /topup:
+ *  post:
+ *      security:
+ *          -   bearerAuth: []
+ *      tags:
+ *          - 3. Module Transaction
+ *      summary: Topup Saldo
+ *      requestBody:
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          top_up_amount:
+ *                              type: number
+ *                              example: 10000
+
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Top Up Balance berhasil
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      balance:
+ *                                          type: number
+ *                                          example: 150000
+ *          400:
+ *              description: Invalid top_up_amount
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 108
+ *                              message:
+ *                                  type: string
+ *                                  example: Parameter top_up_amount hanya boleh angka dan tidak boleh lebih kecil dari 0
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 108
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ * /transaction:
+ *  post:
+ *      security:
+ *          -   bearerAuth: []
+ *      tags:
+ *          - 3. Module Transaction
+ *      summary: Pembayaran layanan
+ *      requestBody:
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          service_code:
+ *                              type: string
+ *                              example: PULSA
+
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Transaksi Berhasil
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      invoice_number:
+ *                                          type: string
+ *                                          example: 2d559fb4-8e01-4def-8695-bc3684ea2af7
+ *                                      transaction_type:
+ *                                          type: string
+ *                                          example: PAYMENT
+ *                                      description:
+ *                                          type: string
+ *                                          example: Pulsa
+ *                                      total_amount:
+ *                                          type: number
+ *                                          example: 15000
+ *                                      created_on:
+ *                                          type: string
+ *                                          example: 2025-07-24T20:41:42.097Z
+ *          400:
+ *              description: Layanan tidak ditemukan
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 102
+ *                              message:
+ *                                  type: string
+ *                                  example: Service atau layanan tidak ditemukan
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 108
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ * /transaction/history:
+ *  get:
+ *      security:
+ *          -   bearerAuth: []
+ *      tags:
+ *          - 3. Module Transaction
+ *      summary: Riwayat transaksi
+ *      parameters:
+ *          -   in: query
+ *              name: offset
+ *              schema:
+ *                  type: integer
+ *                  example: 0
+ *              required: false
+ *              description: Dapatkan data dari indeks ke-
+ *          -   in: query
+ *              name: limit
+ *              schema:
+ *                  type: integer
+ *                  example: 3
+ *              required: false
+ *              description: Batasi data yang didapatkan
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Sukses
+ *                              offset:
+ *                                  type: number
+ *                                  example: 0
+ *                              limit:
+ *                                  type: number
+ *                                  example: 3
+ *                              data:
+ *                                  type: array
+ *                                  items:
+ *                                      type: object
+ *                                      properties:
+ *                                          invoice_number:
+ *                                              type: string
+ *                                          transaction_type:
+ *                                              type: string
+ *                                          description:
+ *                                              type: string
+ *                                          total_amount:
+ *                                              type: number
+ *                                          created_on:
+ *                                              type: string
+ *                                  example:
+ *                                      -   invoice_number: a54de6d9-5cbf-404b-aef2-4a53af8c40eb
+ *                                          transaction_type: TOPUP
+ *                                          description: Top Up Balance
+ *                                          total_amount: 100000
+ *                                          created_on: 2025-07-24T20:39:55.599Z
+ *                                      -   invoice_number: d54de6d2-a3bf-v04b-aef2-4a53af8c40eb
+ *                                          transaction_type: PAYMENT
+ *                                          description: Pajak PBB
+ *                                          total_amount: 40000
+ *                                          created_on: 2025-07-24T22:39:55.599Z
+ *                                      -   invoice_number: s54de6d2-a3bf-v04b-aef2-4a53af8c40eb
+ *                                          transaction_type: PAYMENT
+ *                                          description: Listrik PLN
+ *                                          total_amount: 100000
+ *                                          created_on: 2025-07-24T19:39:55.599Z
+ *          400:
+ *              description: Layanan tidak ditemukan
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 102
+ *                              message:
+ *                                  type: string
+ *                                  example: Service atau layanan tidak ditemukan
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 108
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ */
+
 import express, { Request, Response } from 'express'
 import { checkSchema, validationResult } from 'express-validator'
 import topupDto from '../dto/topup.dto'
