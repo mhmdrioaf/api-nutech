@@ -3,15 +3,15 @@ import { checkSchema, validationResult } from 'express-validator'
 import topupDto from '../dto/topup.dto'
 import { Transaction } from '../actions/transactions.actions'
 import authMiddleware from '../../auth/middlewares/auth.middleware'
-import { prisma } from '../../..'
 import { servicePaymentDto } from '../dto/servicePayment.dto'
+import db from '../../../lib/database'
 
 const router = express.Router()
 
 router.post('/topup', authMiddleware, checkSchema(topupDto), async (req: Request, res: Response) => {
     const validatorResult = validationResult(req)
     if (validatorResult.isEmpty()) {
-        const transaction = new Transaction(prisma)
+        const transaction = new Transaction(db)
 
         const userEmail = req.user!.email
         const topupAmount = Number(req.body.top_up_amount)
@@ -54,7 +54,7 @@ router.post('/transaction', authMiddleware, checkSchema(servicePaymentDto), asyn
         })
     }
 
-    const transaction = new Transaction(prisma)
+    const transaction = new Transaction(db)
     const transactionResult = await transaction.payService(req.user!.email, req.body.service_code)
 
     if (transactionResult.status !== 0 && transactionResult.status !== 500) {
@@ -78,7 +78,7 @@ router.post('/transaction/history', authMiddleware, async (req: Request, res: Re
     let offset = 0
     if (!isNaN(offsetQuery)) offset = offsetQuery
 
-    const transaction = new Transaction(prisma)
+    const transaction = new Transaction(db)
     const transactionHistory = await transaction.history(req.user!.email, offset, limit)
     
     return res.status(200).json({

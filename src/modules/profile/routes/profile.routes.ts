@@ -1,24 +1,26 @@
 import express, { Request, Response } from 'express'
 import authMiddleware from '../../auth/middlewares/auth.middleware'
-import { prisma } from '../../..'
-import { profileUpdateDto } from '../dto/profile-update.dto'
 import upload from '../middlewares/upload.middleware'
 import cloudinary from '../../../lib/cloudinary'
-import { MulterError } from 'multer'
+import db from '../../../lib/database'
 
 const router = express.Router()
 
 router.get('/profile', authMiddleware, async (req: Request, res: Response) => {
     if (req.user) {
-        const user = await prisma.users.findFirst({
-            where: {
-                email: req.user.email
-            },
-            omit: {
-                id: true,
-                password: true,
-            }
-        })
+        const query = `
+            select
+                email,
+                first_name,
+                last_name,
+                profile_image
+            from users u
+            where
+                u.email = $1 
+        `
+        const values = [req.user.email]
+        const result = await db.query<Partial<TUser>>(query, values)
+        const user = result.rows?.[0] ?? null
 
         if (user) {
             return res.status(200).json({
@@ -43,46 +45,49 @@ router.get('/profile', authMiddleware, async (req: Request, res: Response) => {
 })
 
 router.put('/profile/update', authMiddleware, async (req: Request, res: Response) => {
-    if (req.user) {
-        const firstName = req.body.first_name ?? undefined
-        const lastName = req.body.last_name ?? undefined
+    if (!req.user) return
 
-        const updatePayload = {
-            first_name: firstName,
-            last_name: lastName
-        }
+    const firstName = req.body.first_name ?? undefined
+    const lastName = req.body.last_name ?? undefined
 
-        const user = await prisma.users.update({
-            where: {
-                email: req.user.email,
-            },
-            data: updatePayload,
-            omit: {
-                id: true,
-                password: true,
-            }
-        })
+    const updateFields: string[] = []
+    const updateValues: any[] = []
+    let fieldIndex = 1
 
-        if (user) {
-            return res.status(200).json({
-                status: 0,
-                message: 'Sukses',
-                data: user,
-            })
-        } else {
-            return res.status(400).json({
-                status: 102,
-                message: 'Data tidak ditemukan',
-                data: null,
-            })
-        }
-    } else {
-        return res.status(401).json({
-            status: 108,
-            message: 'Token tidak valid atau kedaluwarsa',
+    if (firstName) {
+        updateFields.push(`first_name = $${fieldIndex++}`)
+        updateValues.push(firstName)
+    }
+
+    if (lastName) {
+        updateFields.push(`last_name = $${fieldIndex++}`)
+        updateValues.push(lastName)
+    }
+
+    const updateQuery = `
+            update users
+            set ${updateFields.join(', ')}
+            where email = $${fieldIndex}
+            returning email, first_name, last_name
+        `
+
+    updateValues.push(req.user.email)
+    const result = await db.query<Partial<TUser>>(updateQuery, updateValues)
+    const user = result.rows?.[0]
+
+    if (!user) {
+        return res.status(400).json({
+            status: 102,
+            message: 'Data tidak ditemukan',
             data: null,
         })
     }
+
+    return res.status(200).json({
+        status: 0,
+        message: 'Sukses',
+        data: user,
+    })
 })
 
 router.put('/profile/image', authMiddleware, upload.single('file'), async (req: Request, res: Response) => {
@@ -114,18 +119,20 @@ router.put('/profile/image', authMiddleware, upload.single('file'), async (req: 
         })
 
         if (uploadResult.secure_url) {
-            const user = await prisma.users.update({
-                where: {
-                    email: reqUser.email,
-                },
-                data: {
-                    profile_image: uploadResult.secure_url,
-                },
-                omit: {
-                    id: true,
-                    password: true,
-                }
-            })
+            const query = `
+                update users
+                set profile_image = $1
+                where
+                    email = $2
+                returning
+                    email,
+                    first_name,
+                    last_name,
+                    profile_image
+            `
+            const values = [uploadResult.secure_url, reqUser.email]
+            const result = await db.query<Partial<TUser>>(query, values)
+            const user = result.rows?.[0]
 
             return res.status(200).json({
                 status: 0,

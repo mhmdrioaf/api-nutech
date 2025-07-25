@@ -1,60 +1,33 @@
 import express, { Request, Response } from 'express'
 import authMiddleware from '../../auth/middlewares/auth.middleware'
-import { prisma } from '../../..'
+import db from '../../../lib/database'
 
 const router = express.Router()
 
 router.get('/balance', authMiddleware, async (req: Request, res: Response) => {
     try {
         const reqUser = req.user!
-
-        const user = await prisma.users.findFirst({
-            where: {
-                email: reqUser.email,
-            },
-            select: {
-                id: true,
+        const query = await db.query<Partial<TWallet>>(`
+            select balance from users_wallet uw
+            join users u on
+                u.id = uw.owner_id
+                and u.email = $1
+        `, [reqUser.email])
+        const wallet = query.rowCount ? query.rows[0] : null
+        if (wallet) {
+            const result = {
+                balance: Number(wallet.balance)
             }
-        })
 
-        if (user) {
-            const wallet = await prisma.users_wallet.upsert({
-                where: {
-                    owner_id: user.id,
-                },
-                update: {
-                    owner_id: user.id,
-                },
-                create: {
-                    balance: 0,
-                    owner_id: user.id,
-                },
-                select: {
-                    balance: true,
-                },
+            return res.status(200).json({
+                status: 0,
+                message: 'Get Balance berhasil',
+                data: result,
             })
-
-            if (wallet) {
-                const result = {
-                    balance: wallet.balance.toNumber()
-                }
-
-                return res.status(200).json({
-                    status: 0,
-                    message: 'Get Balance berhasil',
-                    data: result,
-                })
-            } else {
-                return res.status(400).json({
-                    status: 102,
-                    message: 'Wallet tidak ditemukan',
-                    data: null,
-                })
-            }
         } else {
             return res.status(400).json({
                 status: 102,
-                message: 'User tidak ditemukan',
+                message: 'Wallet tidak ditemukan',
                 data: null,
             })
         }

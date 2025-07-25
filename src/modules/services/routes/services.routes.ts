@@ -1,19 +1,23 @@
 import express, { Request, Response } from 'express'
 import authMiddleware from '../../auth/middlewares/auth.middleware'
-import { prisma } from '../../..'
+import db from '../../../lib/database'
 
 const router = express.Router()
 
 router.get('/services', authMiddleware, async (_req: Request, res: Response) => {
-    const services = await prisma.services.findMany({
-        omit: {
-            id: true,
-        }
-    })
-
+    const query = `
+        select
+            service_code,
+            service_name,
+            service_icon,
+            service_tarif
+        from services
+    `
+    const result = await db.query<Partial<TService>>(query)
+    const services = result.rows
     const results = services.map(service => ({
         ...service,
-        service_tarif: service.service_tarif.toNumber()
+        service_tarif: Number(service.service_tarif)
     }))
 
     return res.status(200).json({

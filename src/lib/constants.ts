@@ -1,4 +1,4 @@
 export enum ETransactionType {
-    TOP_UP = "TOP UP",
+    TOP_UP = "TOPUP",
     PAYMENT = "PAYMENT",
 }

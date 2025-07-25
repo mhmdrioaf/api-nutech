@@ -1,55 +1,50 @@
-import { Prisma, PrismaClient, transaction_history } from "../../../generated/prisma"
+import { Pool } from "pg"
 import { ETransactionType } from "../../../lib/constants"
 import { v4 as uuidv4 } from "uuid"
 
 interface IServicePaymentStatus {
     status: number
     message: string
-    data: Partial<transaction_history> | null
+    data: Partial<TTransactionHistory> | null
 }
 
 export class Transaction {
-    private prismaService: PrismaClient
-    constructor(prisma: PrismaClient) {
-        this.prismaService = prisma
+    private db: Pool
+    constructor(_db: Pool) {
+        this.db = _db
     }
 
     async topup(userEmail: string, topup_balance: number) {
         try {
-            const userWallet = await this.prismaService.users_wallet.findFirst({
-                where: {
-                    owner: {
-                        email: userEmail,
-                    }
-                }
-            })
+            const query = await this.db.query<TWallet>(`
+                select
+                    uw.*
+                from users_wallet uw
+                join users u on
+                    u.email = $1
+                    and u.id = uw.owner_id
+            `, [userEmail])
+            const userWallet = query.rowCount ? query.rows[0] : null
 
             if (userWallet) {
-                const addBalance = this.prismaService.users_wallet.update({
-                    where: {
-                        id: userWallet.id,
-                    },
-                    data: {
-                        balance: new Prisma.Decimal(userWallet.balance).plus(topup_balance),
-                    }
-                })
+                const addBalance = this.db.query<Partial<TWallet>>(`
+                    update users_wallet
+                    set balance = balance + $1
+                    where id = $2
+                    returning balance
+                `, [topup_balance, userWallet.id])
 
-                const addTransactionHistory = this.prismaService.transaction_history.create({
-                    data: {
-                        wallet_id: userWallet.id,
-                        transaction_type: ETransactionType.TOP_UP,
-                        description: 'Top Up Balance',
-                        invoice_number: uuidv4(),
-                        total_amount: new Prisma.Decimal(topup_balance),
+                const addTransactionHistory = this.db.query<TTransactionHistory>(`
+                    insert into transaction_history (invoice_number, transaction_type, description, total_amount, wallet_id)
+                    values ($1, $2, $3, $4, $5)
+                `, [uuidv4(), ETransactionType.TOP_UP, 'Top Up balance', topup_balance, userWallet.id])
 
-                    }
-                })
+                const [walletResult, _transactionResult] = await Promise.all([addBalance, addTransactionHistory])
+                const updatedWallet = walletResult.rowCount ? walletResult.rows[0] : null
 
-                const results = await this.prismaService.$transaction([addBalance, addTransactionHistory])
-
-                if (results && results.length) {
+                if (updatedWallet) {
                     return {
-                        balance: results[0].balance.toNumber()
+                        balance: Number(updatedWallet.balance)
                     }
                 } else {
                     return null
@@ -65,11 +60,12 @@ export class Transaction {
 
     async payService(userEmail: string, service_code: string): Promise<IServicePaymentStatus> {
         try {
-            const service = await this.prismaService.services.findFirst({
-                where: {
-                    service_code,
-                }
-            })
+            const serviceQuery = await this.db.query<TService>(`
+                select * from services
+                where
+                    service_code = $1    
+            `, [service_code])
+            const service = serviceQuery.rowCount ? serviceQuery.rows[0] : null
 
             if (!service) {
                 return {
@@ -79,15 +75,17 @@ export class Transaction {
                 }
             }
 
-            const serviceCost = service.service_tarif.toNumber()
+            const serviceCost = Number(service.service_tarif)
             
-            const userWallet = await this.prismaService.users_wallet.findFirst({
-                where: {
-                    owner: {
-                        email: userEmail,
-                    }
-                }
-            })
+            const userWalletQuery = await this.db.query<TWallet>(`
+                select
+                    uw.*
+                from users_wallet uw
+                join users u on
+                    u.email = $1
+                    and u.id = uw.owner_id
+            `, [userEmail])
+            const userWallet = userWalletQuery.rowCount ? userWalletQuery.rows[0] : null
 
             if (!userWallet) {
                 return {
@@ -97,7 +95,7 @@ export class Transaction {
                 }
             }
 
-            const totalBalance = userWallet.balance.toNumber()
+            const totalBalance = Number(userWallet.balance)
 
             if (totalBalance < serviceCost) {
                 return {
@@ -107,32 +105,28 @@ export class Transaction {
                 }
             }
 
-            const updateUserWallet = this.prismaService.users_wallet.update({
-                where: {
-                    id: userWallet.id,
-                },
-                data: {
-                    balance: userWallet.balance.minus(service.service_tarif)
-                }
-            })
+            const updateUserWallet = this.db.query<TWallet>(`
+                update users_wallet
+                set balance = balance - $1
+                where
+                    id = $2    
+            `, [serviceCost, userWallet.id])
 
-            const createTransactionHistory = this.prismaService.transaction_history.create({
-                data: {
-                    invoice_number: uuidv4(),
-                    total_amount: service.service_tarif,
-                    transaction_type: ETransactionType.PAYMENT,
-                    description: service.service_name,
-                    wallet_id: userWallet.id,
-                },
-                omit: {
-                    id: true,
-                    wallet_id: true,
-                }
-            })
+            const createTransactionHistory = this.db.query<Partial<TTransactionHistory>>(`
+                insert into transaction_history (invoice_number, transaction_type, description, total_amount, wallet_id)
+                values ($1, $2, $3, $4, $5)
+                returning
+                    invoice_number,
+                    transaction_type,
+                    description,
+                    total_amount,
+                    created_on
+            `, [uuidv4(), ETransactionType.PAYMENT, service.service_name, service.service_tarif, userWallet.id])
 
-            const [_userWalletResult, transactionResult] = await this.prismaService.$transaction([updateUserWallet, createTransactionHistory])
+            const [_userWalletResult, transactionResult] = await Promise.all([updateUserWallet, createTransactionHistory])
+            const transaction = transactionResult.rowCount ? transactionResult.rows[0] : null
 
-            if (!transactionResult) {
+            if (!transaction) {
                 return {
                     status: 500,
                     message: 'Internal server error',
@@ -140,11 +134,13 @@ export class Transaction {
                 }
             }
 
+            transaction.total_amount = Number(transaction.total_amount)
+
             return {
-                    status: 0,
-                    message: 'Transaksi berhasil',
-                    data: transactionResult,
-                }
+                status: 0,
+                message: 'Transaksi berhasil',
+                data: transaction,
+            }
         } catch (err) {
             console.error('[TRANSACTION] terjadi kesalahan ketika membayar layanan: ', err)
             return {
@@ -156,21 +152,41 @@ export class Transaction {
     }
 
     async history(userEmail: string, offset: number = 0, limit: number | null) {
-        const userTransactions = await this.prismaService.transaction_history.findMany({
-            where: {
-                wallet: {
-                    owner: {
-                        email: userEmail,
-                    }
-                }
-            },
-            skip: offset,
-            take: limit ?? undefined,
-            omit: {
-                id: true,
-                wallet_id: true,
-            }
-        })
+        let limitStatement = ''
+        const values: any[] = []
+        let fieldIndex = 1
+        values.push(userEmail)
+        fieldIndex++
+
+        values.push(offset)
+        fieldIndex++
+
+        if (limit) {
+            limitStatement = `limit $${fieldIndex}`
+            values.push(limit)
+        }
+
+        const statements = `
+            select
+                th.invoice_number,
+                th.transaction_type,
+                th.description,
+                th.total_amount,
+                th.created_on
+            from users_wallet uw
+            join users u on
+                u.id = uw.owner_id
+                and u.email = $1
+            join transaction_history th on
+                th.wallet_id = uw.id
+            order by th.created_on desc
+            offset $2
+            ${limitStatement}
+        `
+        
+        const query = await this.db.query<Partial<TTransactionHistory>>(statements, values)
+        const userTransactions = query.rows
+        userTransactions.forEach(transaction => transaction.total_amount = Number(transaction.total_amount))
 
         return userTransactions
     }
