@@ -4,7 +4,9 @@
   "description": "PT. Nutech Integrasi API Assignment",
   "main": "index.ts",
   "scripts": {
-    "dev": "bun x nodemon ./src/index.ts"
+    "dev": "bun x nodemon ./src/index.ts",
+    "build": "bun install && bun x tsc",
+    "start": "node ./dist/index.js"
   },
   "author": "Muhammad Rio Ananta Firdaus",
   "license": "ISC",
