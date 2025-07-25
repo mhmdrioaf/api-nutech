@@ -26,5 +26,5 @@ app.use((req: Request, res: Response, next: Function) => {
 })
 
 app.listen(config.APP_PORT, () => {
-    console.log('[server]: Server is running at http://localhost:' + config.APP_PORT)
+    console.log(`[server]: Server is running at ${config.APP_HOST}:${config.APP_PORT}`)
 })
