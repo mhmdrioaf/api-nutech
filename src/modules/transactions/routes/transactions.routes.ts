@@ -68,13 +68,13 @@ router.post('/transaction', authMiddleware, checkSchema(servicePaymentDto), asyn
     return res.status(200).json(transactionResult)
 })
 
-router.post('/transaction/history', authMiddleware, async (req: Request, res: Response) => {
-    const limitQuery = Number(req.body.limit)
+router.get('/transaction/history', authMiddleware, async (req: Request, res: Response) => {
+    const limitQuery = Number(req.query.limit)
     let limit = null
 
     if (!isNaN(limitQuery)) limit = limitQuery
 
-    const offsetQuery = Number(req.body.offset)
+    const offsetQuery = Number(req.query.offset)
     let offset = 0
     if (!isNaN(offsetQuery)) offset = offsetQuery
 
