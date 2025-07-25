@@ -7,10 +7,13 @@ import { bannersRoutes } from './modules/banners/routes/banners.routes'
 import { servicesRoutes } from './modules/services/routes/services.routes'
 import { walletRoutes } from './modules/transactions/routes/wallet.routes'
 import { transactionRoutes } from './modules/transactions/routes/transactions.routes'
+import { specs, swaggerUi } from './lib/swagger'
 
 const app = express()
 
 app.use(express.json())
+
+app.use('/', swaggerUi.serve, swaggerUi.setup(specs))
 
 app.use(
     authRoutes,
