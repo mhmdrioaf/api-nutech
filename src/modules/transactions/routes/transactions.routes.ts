@@ -382,10 +382,22 @@ router.get('/transaction/history', authMiddleware, async (req: Request, res: Res
 
     const transaction = new Transaction(db)
     const transactionHistory = await transaction.history(req.user!.email, offset, limit)
+
+    let paginationResponse: Partial<TPagination> = {
+        offset,
+    }
+
+    if (limit) {
+        paginationResponse = {
+            ...paginationResponse,
+            limit,
+        }
+    }
     
     return res.status(200).json({
         status: 0,
         message: 'Sukses',
+        ...paginationResponse,
         data: transactionHistory,
     })
 })

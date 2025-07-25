@@ -41,3 +41,8 @@ type TTransactionHistory = {
     wallet_id: number
     wallet: TWallet
 }
+
+type TPagination = {
+    offset: number
+    limit: number
+}
