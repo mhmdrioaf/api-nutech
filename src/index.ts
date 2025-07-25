@@ -13,8 +13,6 @@ const app = express()
 
 app.use(express.json())
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(specs))
-
 app.use(
     authRoutes,
     profileRoutes,
@@ -23,6 +21,8 @@ app.use(
     walletRoutes,
     transactionRoutes,
 )
+
+app.use('/', swaggerUi.serve, swaggerUi.setup(specs))
 
 app.use((req: Request, res: Response, next: Function) => {
     next(errorHandler(req, res))

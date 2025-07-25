@@ -76,7 +76,7 @@
  *  post:
  *      tags:
  *          - 1. Module Membership
- *      summary: Pendaftaran Pengguna
+ *      summary: Proses Login
  *      requestBody:
  *          content:
  *              application/json:
@@ -102,7 +102,7 @@
  *                                  example: 0
  *                              message:
  *                                  type: string
- *                                  example: Registrasi berhasil silakan login
+ *                                  example: Login sukses
  *                              data:
  *                                  type: object
  *                                  properties:
