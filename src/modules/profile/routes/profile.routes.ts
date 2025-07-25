@@ -68,7 +68,7 @@ router.put('/profile/update', authMiddleware, async (req: Request, res: Response
             update users
             set ${updateFields.join(', ')}
             where email = $${fieldIndex}
-            returning email, first_name, last_name
+            returning email, first_name, last_name, profile_image
         `
 
     updateValues.push(req.user.email)

@@ -16,10 +16,10 @@
  *                              example: user@gmail.com
  *                          first_name:
  *                              type: string
- *                              example: Dummy
+ *                              example: User
  *                          last_name:
  *                              type: string
- *                              example: User
+ *                              example: Nutech
  *                          password:
  *                              type: string
  *                              example: P#ssw0rd
@@ -126,7 +126,7 @@
  *                                  type: object
  *                                  example: null
  *          401:
- *              description: Format email tidak sesuai
+ *              description: Unauthorized
  *              content:
  *                  application/json:
  *                      schema:
@@ -138,6 +138,246 @@
  *                              message:
  *                                  type: string
  *                                  example: Username atau password salah
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 500
+ *                              message:
+ *                                  type: string
+ *                                  example: Internal server error
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ * /profile:
+ *  get:
+ *      tags:
+ *          - 1. Module Membership
+ *      summary: Detail Profil
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Sukses
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      email: 
+ *                                          type: string
+ *                                          example: user@gmail.com
+ *                                      first_name: 
+ *                                          type: string
+ *                                          example: User
+ *                                      last_name: 
+ *                                          type: string
+ *                                          example: Nutech
+ *                                      profile_image: 
+ *                                          type: string
+ *                                          example: null
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 103
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 500
+ *                              message:
+ *                                  type: string
+ *                                  example: Internal server error
+ *                              data:
+ *                                  type: object
+ * /profile/update:
+ *  put:
+ *      tags:
+ *          - 1. Module Membership
+ *      summary: Update Detail Profil
+ *      security:
+ *          - bearerAuth: []
+ *      requestBody:
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          first_name:
+ *                              type: string
+ *                              example: Rio
+ *                          last_name:
+ *                              type: string
+ *                              example: Ananta
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Sukses
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      email: 
+ *                                          type: string
+ *                                          example: user@gmail.com
+ *                                      first_name: 
+ *                                          type: string
+ *                                          example: Rio
+ *                                      last_name: 
+ *                                          type: string
+ *                                          example: Ananta
+ *                                      profile_image: 
+ *                                          type: string
+ *                                          example: null
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 103
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          500:
+ *              description: Internal server error
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 500
+ *                              message:
+ *                                  type: string
+ *                                  example: Internal server error
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ * /profile/image:
+ *  put:
+ *      tags:
+ *          - 1. Module Membership
+ *      summary: Upload Foto Profil
+ *      security:
+ *          - bearerAuth: []
+ *      requestBody:
+ *          content:
+ *            multipart/form-data:
+ *                schema:
+ *                    type: object
+ *                    properties:
+ *                        file:
+ *                            type: string
+ *                            format: binary
+ *      responses:
+ *          200:
+ *              description: OK
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 0
+ *                              message:
+ *                                  type: string
+ *                                  example: Sukses
+ *                              data:
+ *                                  type: object
+ *                                  properties:
+ *                                      email: 
+ *                                          type: string
+ *                                          example: user@gmail.com
+ *                                      first_name: 
+ *                                          type: string
+ *                                          example: Rio
+ *                                      last_name: 
+ *                                          type: string
+ *                                          example: Ananta
+ *                                      profile_image: 
+ *                                          type: string
+ *                                          example: https://res.cloudinary.com/dkneokftz/image/upload/v1753413335/nutech/gtrwb4gsauy10hekc1uy.jpg
+ *          400:
+ *              description: Foto profil tidak sesuai
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 102
+ *                              message:
+ *                                  type: string
+ *                                  example: Format Image tidak sesuai
+ *                              data:
+ *                                  type: object
+ *                                  example: null
+ *          401:
+ *              description: Unauthorized
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              status:
+ *                                  type: integer
+ *                                  example: 103
+ *                              message:
+ *                                  type: string
+ *                                  example: Token tidak valid atau kedaluwarsa
  *                              data:
  *                                  type: object
  *                                  example: null
